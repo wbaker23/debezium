@@ -66,6 +66,9 @@ public class JdbcChangeEventSink implements ChangeEventSink {
     private final Duration flushRetryDelay;
     private final ConnectorContext connectorContext;
 
+    final Map<CollectionId, Buffer> upsertBufferByTable = new LinkedHashMap<>();
+    final Map<CollectionId, Buffer> deleteBufferByTable = new LinkedHashMap<>();
+
     public JdbcChangeEventSink(JdbcSinkConnectorConfig config, StatelessSession session, DatabaseDialect dialect, RecordWriter recordWriter,
                                ConnectorContext connectorContext) {
         this.config = config;
@@ -81,8 +84,6 @@ public class JdbcChangeEventSink implements ChangeEventSink {
     }
 
     public void execute(Collection<SinkRecord> records) {
-        final Map<CollectionId, Buffer> upsertBufferByTable = new LinkedHashMap<>();
-        final Map<CollectionId, Buffer> deleteBufferByTable = new LinkedHashMap<>();
 
         for (SinkRecord kafkaSinkRecord : records) {
 
