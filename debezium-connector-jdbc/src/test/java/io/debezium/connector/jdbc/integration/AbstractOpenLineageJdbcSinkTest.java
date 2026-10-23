@@ -73,7 +73,8 @@ public abstract class AbstractOpenLineageJdbcSinkTest extends AbstractJdbcSinkTe
         try {
             URL resource = getClass().getClassLoader().getResource("openlineage/openlineage.yml");
             return Paths.get(resource.toURI()).toString();
-        } catch (URISyntaxException e) {
+        }
+        catch (URISyntaxException e) {
             throw new IllegalStateException("Unable to resolve openlineage.yml from classpath", e);
         }
     }
