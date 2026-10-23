@@ -8,6 +8,9 @@ package io.debezium.connector.jdbc.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,13 +59,23 @@ public abstract class AbstractOpenLineageJdbcSinkTest extends AbstractJdbcSinkTe
         Map<String, String> defaultSinkConfig = super.getDefaultSinkConfig();
         defaultSinkConfig.put("name", "my-sink-with-lineage");
         defaultSinkConfig.put("openlineage.integration.enabled", "true");
-        defaultSinkConfig.put("openlineage.integration.config.file.path", getClass().getClassLoader().getResource("openlineage/openlineage.yml").getPath());
+        // Resolve via URI so the Windows drive letter is handled; yields a native path string
+        defaultSinkConfig.put("openlineage.integration.config.file.path", getOpenLineageConfigPath());
         defaultSinkConfig.put("openlineage.integration.job.description", "This connector does cdc for products");
         defaultSinkConfig.put("openlineage.integration.job.tags", "env=prod,team=cdc");
         defaultSinkConfig.put("openlineage.integration.job.owners", "Mario=maintainer,John Doe=Data scientist");
         defaultSinkConfig.put("openlineage.integration.dataset.kafka.bootstrap.servers", "localhost:9092");
 
         return defaultSinkConfig;
+    }
+
+    private String getOpenLineageConfigPath() {
+        try {
+            URL resource = getClass().getClassLoader().getResource("openlineage/openlineage.yml");
+            return Paths.get(resource.toURI()).toString();
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Unable to resolve openlineage.yml from classpath", e);
+        }
     }
 
     @Test
